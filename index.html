@@ -5,27 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life in Weeks</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #ffffff;
-            color: #000000;
-            margin: 0;
-            padding: 40px;
-            line-height: 1.6;
-        }
-        h1 {
-            color: #000000;
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
-        p {
-            font-size: 18px;
-            color: #000000;
-        }
+        body { font-family: Arial, sans-serif; }
+        .weeks-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin: 20px 0; }
+        .week { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        .highlight { background-color: #ffeb3b; }
     </style>
 </head>
 <body>
     <h1>Life in Weeks</h1>
-    <p>This is a simple HTML page to represent life in weeks.</p>
+    <form id="date-form">
+        <label for="birthdate">Enter your birthdate:</label>
+        <input type="date" id="birthdate" name="birthdate" required>
+        <button type="submit">Submit</button>
+    </form>
+    <div id="weeks-container" class="weeks-grid"></div>
+    <div id="stats"></div>
+
+    <script>
+        const form = document.getElementById('date-form');
+        const weeksContainer = document.getElementById('weeks-container');
+        const statsContainer = document.getElementById('stats');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const birthdate = new Date(form.birthdate.value);
+            const today = new Date();
+
+            const weeksLived = Math.floor((today - birthdate) / (1000 * 60 * 60 * 24 * 7));
+            const totalWeeks = 90 * 52; // Approximate total weeks in 90 years
+
+            statsContainer.innerHTML = `<p>You have lived ${weeksLived} weeks out of ${totalWeeks} weeks. </p>`;
+
+            weeksContainer.innerHTML = '';
+            for (let week = 0; week < totalWeeks; week++) {
+                const weekDiv = document.createElement('div');
+                weekDiv.className = 'week';
+                if (week < weeksLived) weekDiv.classList.add('highlight');
+                weekDiv.innerText = `Week ${week + 1}`;
+                weeksContainer.appendChild(weekDiv);
+            }
+        });
+    </script>
 </body>
 </html>
