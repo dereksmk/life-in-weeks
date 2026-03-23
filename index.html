@@ -126,7 +126,6 @@
     -webkit-appearance: none;
     appearance: none;
     border-radius: 0;
-    /* hide number spinners */
     -moz-appearance: textfield;
   }
   .dob-segment input::-webkit-outer-spin-button,
@@ -178,45 +177,53 @@
   .setup-btn:hover,
   .setup-btn:active { background: var(--accent); color: #fff; }
 
-  /* ── Stats ── */
-  .stats-bar {
+  /* ── Axis labels ── */
+  .year-col {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 14px;
-    padding: 0 2px;
-    flex-wrap: wrap;
-    gap: 6px;
+    flex-direction: row;
+    align-items: flex-start;
+    flex-shrink: 0;
+    gap: 2px;
   }
 
-  .stat {
-    font-size: clamp(9px, 2.2vw, 11px);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--ink-light);
-  }
-
-  .stat span {
-    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
-    font-size: clamp(14px, 3.5vw, 18px);
-    color: var(--ink);
-    font-weight: 700;
-    letter-spacing: 0;
-    margin-left: 4px;
-  }
-
-  /* ── Y-axis rotated label ── */
   .y-axis-label {
     writing-mode: vertical-rl;
     transform: rotate(180deg);
-    font-size: 9px;
+    font-size: 10px;
+    font-weight: 700;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-light);
-    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 4px;
     padding-top: 28px; /* align with first row */
-    flex-shrink: 0;
     user-select: none;
+  }
+
+  .y-arrow {
+    writing-mode: horizontal-tb;
+    transform: rotate(180deg);
+    font-size: 14px;
+    letter-spacing: 0;
+  }
+
+  .x-axis-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+
+  .x-arrow {
+    font-size: 14px;
+    letter-spacing: 0;
   }
 
   /* ── Calendar ── */
@@ -272,15 +279,6 @@
   }
 
   .grid-area { flex: 1; min-width: 0; }
-
-  .axis-label-weeks {
-    font-size: 9px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--ink-light);
-    text-align: left;
-    margin-bottom: 4px;
-  }
 
   .grid-rows { display: flex; flex-direction: column; gap: var(--gap-sm); }
   .grid-row  { display: flex; flex-direction: row; gap: 0; }
@@ -339,7 +337,7 @@
     font-size: clamp(11px, 2.5vw, 15px);
     letter-spacing: 0.06em;
     color: var(--ink-light);
-    font-style: italic;
+    font-style: normal;
   }
 
   footer .total {
@@ -409,10 +407,8 @@
     </div>
 
     <div class="setup-error" id="dob-error"></div>
-    <button class="setup-btn" onclick="applyDOB()">Generate my calendar</button>
+    <button class="setup-btn" onclick="applyDOB()">Generate</button>
   </div>
-
-
 
   <div class="calendar-scroll">
     <div class="calendar-outer">
@@ -425,7 +421,7 @@
   </div>
 
   <footer>
-    <p>"Each square filled is gone. Each empty one is a gift. Make it count."</p>
+    <p>Each square filled is gone. Each empty one is a gift. Make it count.</p>
     <div class="total">5,200 weeks · 100 years · 52 weeks per year</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-box filled"></div> Lived</div>
@@ -520,10 +516,6 @@
     const weeksPerFrame = Math.max(1, Math.ceil(totalWeeks / (2000/16)));
     let filled = 0;
 
-    function updateStats(n) {
-      document.getElementById('stat-lived').textContent     = n.toLocaleString();
-    }
-
     animationTimer = setInterval(() => {
       const end = Math.min(filled + weeksPerFrame, totalWeeks);
       for (let i = filled; i < end; i++) {
@@ -531,12 +523,11 @@
         if (c) c.className = 'cell filled';
       }
       filled = end;
-      updateStats(filled);
       if (filled >= totalWeeks) {
         clearInterval(animationTimer);
+        // Mark current week orange — first unfilled cell
         const c = document.getElementById(`c-${Math.floor(totalWeeks/WEEKS)}-${totalWeeks%WEEKS}`);
         if (c) c.className = 'cell current';
-        updateStats(totalWeeks);
       }
     }, 16);
   }
