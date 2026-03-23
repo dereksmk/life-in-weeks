@@ -1,50 +1,583 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Life in Weeks</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        .weeks-grid { display: grid; grid-template-columns: repeat(7, 1fr); margin: 20px 0; }
-        .week { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        .highlight { background-color: #ffeb3b; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>My Life In Weeks</title>
+<style>
+  @font-face {
+    font-family: 'Century Gothic';
+    src: local('Century Gothic'), local('CenturyGothic');
+  }
+
+  :root {
+    --bg: #f5f0e8;
+    --ink: #1a1410;
+    --ink-light: #4a3f35;
+    --ink-faint: #c8bfb0;
+    --filled: #1a1410;
+    --future: #f5f0e8;
+    --border: #1a1410;
+    --accent: #FE5000;
+    --cell: 13px;
+    --gap-sm: 2px;
+    --gap-group: 7px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
+    min-height: 100vh;
+    padding: 32px 16px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; width: 100%; max-width: 900px; }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 18px;
+  }
+
+  header h1 {
+    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
+    font-size: clamp(22px, 6vw, 52px);
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    line-height: 1;
+    color: var(--ink);
+  }
+
+  header .subtitle {
+    font-size: clamp(9px, 2.5vw, 11px);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-top: 8px;
+  }
+
+  /* ── Setup panel ── */
+  .setup-panel {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 20px 24px;
+    margin-bottom: 28px;
+  }
+
+  .setup-label {
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    display: block;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+
+  .dob-inputs {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  .dob-segment {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .dob-segment span {
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .dob-segment input {
+    background: transparent;
+    border: 1px solid #5a4f45;
+    color: var(--bg);
+    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
+    font-size: 22px;
+    padding: 10px 4px;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    /* hide number spinners */
+    -moz-appearance: textfield;
+  }
+  .dob-segment input::-webkit-outer-spin-button,
+  .dob-segment input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  .dob-segment input:focus { border-color: var(--bg); }
+
+  #inp-dd  { width: 58px; }
+  #inp-mm  { width: 58px; }
+  #inp-yyyy { width: 80px; }
+
+  .dob-sep {
+    font-size: 24px;
+    color: #5a4f45;
+    padding-bottom: 28px;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .setup-error {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    text-align: center;
+    margin-top: 10px;
+    min-height: 14px;
+  }
+
+  .setup-btn {
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    background: var(--bg);
+    color: var(--ink);
+    border: none;
+    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-weight: 500;
+    -webkit-appearance: none;
+    border-radius: 0;
+    touch-action: manipulation;
+  }
+
+  .setup-btn:hover,
+  .setup-btn:active { background: var(--accent); color: #fff; }
+
+  /* ── Stats ── */
+  .stats-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+    padding: 0 2px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .stat {
+    font-size: clamp(9px, 2.2vw, 11px);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  .stat span {
+    font-family: 'Century Gothic', 'AppleGothic', 'Futura', sans-serif;
+    font-size: clamp(14px, 3.5vw, 18px);
+    color: var(--ink);
+    font-weight: 700;
+    letter-spacing: 0;
+    margin-left: 4px;
+  }
+
+  /* ── Calendar ── */
+  .calendar-scroll {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .calendar-outer {
+    display: flex;
+    gap: 8px;
+    min-width: min-content;
+  }
+
+  .year-labels {
+    display: flex;
+    flex-direction: column;
+    padding-top: 28px;
+    flex-shrink: 0;
+  }
+
+  .year-label {
+    height: var(--cell);
+    margin-bottom: var(--gap-sm);
+    font-size: 7px;
+    letter-spacing: 0.03em;
+    color: var(--ink-light);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    width: 22px;
+    line-height: 1;
+  }
+
+  .week-labels {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    height: 28px;
+    margin-bottom: 4px;
+  }
+
+  .week-label-group { display: flex; gap: var(--gap-sm); }
+  .week-label-group + .week-label-group { margin-left: var(--gap-group); }
+
+  .week-label {
+    width: var(--cell);
+    font-size: 6px;
+    color: var(--ink-light);
+    text-align: center;
+    line-height: 1;
+  }
+
+  .grid-area { flex: 1; min-width: 0; }
+
+  .axis-label-weeks {
+    font-size: 8px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    text-align: center;
+    margin-bottom: 4px;
+  }
+
+  .grid-rows { display: flex; flex-direction: column; gap: var(--gap-sm); }
+  .grid-row  { display: flex; flex-direction: row; gap: 0; }
+  .week-group { display: flex; gap: var(--gap-sm); }
+  .week-group + .week-group { margin-left: var(--gap-group); }
+
+  .cell {
+    width: var(--cell);
+    height: var(--cell);
+    border: 1px solid var(--border);
+    background: var(--future);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .cell.filled  { background: var(--filled); }
+
+  .cell.current {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  @media (hover: hover) {
+    .cell:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--ink);
+      color: var(--bg);
+      font-size: 9px;
+      padding: 4px 8px;
+      white-space: nowrap;
+      pointer-events: none;
+      z-index: 10;
+      letter-spacing: 0.05em;
+    }
+  }
+
+  /* ── Footer ── */
+  footer {
+    margin-top: 28px;
+    text-align: center;
+    border-top: 1px solid var(--ink-faint);
+    padding-top: 18px;
+  }
+
+  footer p {
+    font-size: clamp(11px, 2.5vw, 15px);
+    letter-spacing: 0.06em;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  footer .total {
+    font-size: clamp(9px, 2vw, 11px);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 6px;
+  }
+
+  .legend {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+  }
+
+  .legend-box { width: 10px; height: 10px; border: 1px solid var(--border); flex-shrink: 0; }
+  .legend-box.filled  { background: var(--filled); }
+  .legend-box.current { background: var(--accent); border-color: var(--accent); }
+  .legend-box.future  { background: var(--future); }
+
+  @media (max-width: 420px) {
+    :root { --cell: 7px; --gap-sm: 1px; --gap-group: 4px; }
+    .year-label { font-size: 6px; width: 16px; }
+    .week-label { font-size: 5px; }
+  }
+</style>
 </head>
 <body>
-    <h1>Life in Weeks</h1>
-    <form id="date-form">
-        <label for="birthdate">Enter your birthdate:</label>
-        <input type="date" id="birthdate" name="birthdate" required>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="weeks-container" class="weeks-grid"></div>
-    <div id="stats"></div>
 
-    <script>
-        const form = document.getElementById('date-form');
-        const weeksContainer = document.getElementById('weeks-container');
-        const statsContainer = document.getElementById('stats');
+<div class="wrapper">
+  <header>
+    <h1>My Life In Weeks</h1>
+    <p class="subtitle">Every square is a week — lived or yet to come</p>
+  </header>
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const birthdate = new Date(form.birthdate.value);
-            const today = new Date();
+  <div class="setup-panel">
+    <span class="setup-label">Enter your date of birth</span>
 
-            const weeksLived = Math.floor((today - birthdate) / (1000 * 60 * 60 * 24 * 7));
-            const totalWeeks = 90 * 52; // Approximate total weeks in 90 years
+    <div class="dob-inputs">
+      <div class="dob-segment">
+        <input type="number" id="inp-dd" placeholder="DD" min="1" max="31" inputmode="numeric" pattern="[0-9]*" />
+        <span>Day</span>
+      </div>
+      <div class="dob-sep">/</div>
+      <div class="dob-segment">
+        <input type="number" id="inp-mm" placeholder="MM" min="1" max="12" inputmode="numeric" pattern="[0-9]*" />
+        <span>Month</span>
+      </div>
+      <div class="dob-sep">/</div>
+      <div class="dob-segment">
+        <input type="number" id="inp-yyyy" placeholder="YYYY" min="1900" max="2099" inputmode="numeric" pattern="[0-9]*" />
+        <span>Year</span>
+      </div>
+    </div>
 
-            statsContainer.innerHTML = `<p>You have lived ${weeksLived} weeks out of ${totalWeeks} weeks. </p>`;
+    <div class="setup-error" id="dob-error"></div>
+    <button class="setup-btn" onclick="applyDOB()">Generate my calendar</button>
+  </div>
 
-            weeksContainer.innerHTML = '';
-            for (let week = 0; week < totalWeeks; week++) {
-                const weekDiv = document.createElement('div');
-                weekDiv.className = 'week';
-                if (week < weeksLived) weekDiv.classList.add('highlight');
-                weekDiv.innerText = `Week ${week + 1}`;
-                weeksContainer.appendChild(weekDiv);
-            }
-        });
-    </script>
+  <div class="stats-bar">
+    <div class="stat">Weeks lived <span id="stat-lived">—</span></div>
+    <div class="stat">Weeks remaining <span id="stat-remaining">—</span></div>
+    <div class="stat">Year <span id="stat-year">—</span></div>
+  </div>
+
+  <div class="calendar-scroll">
+    <div class="calendar-outer">
+      <div class="year-labels" id="year-labels"></div>
+      <div class="grid-area">
+        <div class="axis-label-weeks">← Weeks →</div>
+        <div class="week-labels" id="week-labels"></div>
+        <div class="grid-rows" id="grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>"The idea is not to live forever, it is to create something that will."</p>
+    <div class="total">5,200 weeks · 100 years · 52 weeks per year</div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-box filled"></div> Lived</div>
+      <div class="legend-item"><div class="legend-box current"></div> Current week</div>
+      <div class="legend-item"><div class="legend-box future"></div> Future</div>
+    </div>
+  </footer>
+</div>
+
+<script>
+  const YEARS = 100, WEEKS = 52, GROUPS = 13;
+  let birthDate = null, animationTimer = null;
+
+  /* Auto-advance focus DD → MM → YYYY */
+  document.getElementById('inp-dd').addEventListener('input', function () {
+    if (this.value.length >= 2) document.getElementById('inp-mm').focus();
+  });
+  document.getElementById('inp-mm').addEventListener('input', function () {
+    if (this.value.length >= 2) document.getElementById('inp-yyyy').focus();
+  });
+
+  /* Enter on any field triggers generate */
+  ['inp-dd','inp-mm','inp-yyyy'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') applyDOB();
+    });
+  });
+
+  function applyDOB() {
+    const dd   = parseInt(document.getElementById('inp-dd').value, 10);
+    const mm   = parseInt(document.getElementById('inp-mm').value, 10);
+    const yyyy = parseInt(document.getElementById('inp-yyyy').value, 10);
+    const err  = document.getElementById('dob-error');
+
+    if (!dd || !mm || !yyyy || isNaN(dd) || isNaN(mm) || isNaN(yyyy)) {
+      err.textContent = 'Please fill in all three fields.'; return;
+    }
+    if (mm < 1 || mm > 12)  { err.textContent = 'Month must be 1–12.'; return; }
+    if (dd < 1 || dd > 31)  { err.textContent = 'Day must be 1–31.'; return; }
+    if (yyyy < 1900 || yyyy > new Date().getFullYear()) {
+      err.textContent = 'Please enter a valid birth year.'; return;
+    }
+    const candidate = new Date(yyyy, mm - 1, dd);
+    if (candidate.getMonth() !== mm - 1) {
+      err.textContent = "That date doesn't exist — check day/month."; return;
+    }
+    if (candidate > new Date()) {
+      err.textContent = 'Birth date can\'t be in the future.'; return;
+    }
+
+    err.textContent = '';
+    birthDate = candidate;
+    startAnimation();
+  }
+
+  function computeWeeksLived() {
+    if (!birthDate) return 0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.floor((today - birthDate) / (7*24*60*60*1000));
+  }
+
+  function setTooltips() {
+    for (let y = 0; y < YEARS; y++) {
+      for (let w = 0; w < WEEKS; w++) {
+        const cell = document.getElementById(`c-${y}-${w}`);
+        if (!cell) continue;
+        const total = y * WEEKS + w;
+        if (birthDate) {
+          const d = new Date(birthDate.getTime() + total * 7*24*60*60*1000);
+          cell.setAttribute('data-tooltip',
+            `Age ${y} · Wk ${w+1} · ${d.toLocaleString('default',{month:'short'})} ${d.getDate()}, ${d.getFullYear()}`);
+        } else {
+          cell.setAttribute('data-tooltip', `Year ${y} · Week ${w+1}`);
+        }
+      }
+    }
+  }
+
+  function clearGrid() {
+    for (let y = 0; y < YEARS; y++)
+      for (let w = 0; w < WEEKS; w++) {
+        const c = document.getElementById(`c-${y}-${w}`);
+        if (c) c.className = 'cell';
+      }
+  }
+
+  function startAnimation() {
+    if (animationTimer) clearInterval(animationTimer);
+    clearGrid(); setTooltips();
+
+    const totalWeeks    = computeWeeksLived();
+    const weeksPerFrame = Math.max(1, Math.ceil(totalWeeks / (2000/16)));
+    let filled = 0;
+
+    function updateStats(n) {
+      document.getElementById('stat-lived').textContent     = n.toLocaleString();
+      document.getElementById('stat-remaining').textContent = Math.max(0, YEARS*WEEKS - totalWeeks).toLocaleString();
+      document.getElementById('stat-year').textContent      = Math.floor(n / WEEKS);
+    }
+
+    animationTimer = setInterval(() => {
+      const end = Math.min(filled + weeksPerFrame, totalWeeks);
+      for (let i = filled; i < end; i++) {
+        const c = document.getElementById(`c-${Math.floor(i/WEEKS)}-${i%WEEKS}`);
+        if (c) c.className = 'cell filled';
+      }
+      filled = end;
+      updateStats(filled);
+      if (filled >= totalWeeks) {
+        clearInterval(animationTimer);
+        const c = document.getElementById(`c-${Math.floor(totalWeeks/WEEKS)}-${totalWeeks%WEEKS}`);
+        if (c) c.className = 'cell current';
+        updateStats(totalWeeks);
+      }
+    }, 16);
+  }
+
+  function buildWeekLabels() {
+    const container = document.getElementById('week-labels');
+    for (let g = 0; g < GROUPS; g++) {
+      const grp = document.createElement('div'); grp.className = 'week-label-group';
+      for (let w = 0; w < 4; w++) {
+        const wn = g*4+w+1;
+        const lbl = document.createElement('div'); lbl.className = 'week-label';
+        lbl.textContent = (wn===1 || wn%4===1) ? wn : '';
+        grp.appendChild(lbl);
+      }
+      container.appendChild(grp);
+    }
+  }
+
+  function buildYearLabels() {
+    const container = document.getElementById('year-labels');
+    for (let y = 0; y < YEARS; y++) {
+      const lbl = document.createElement('div'); lbl.className = 'year-label';
+      lbl.textContent = (y%5===0) ? y : '';
+      container.appendChild(lbl);
+    }
+  }
+
+  function buildGrid() {
+    const grid = document.getElementById('grid');
+    for (let y = 0; y < YEARS; y++) {
+      const row = document.createElement('div'); row.className = 'grid-row';
+      for (let g = 0; g < GROUPS; g++) {
+        const grp = document.createElement('div'); grp.className = 'week-group';
+        for (let w = 0; w < 4; w++) {
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.id = `c-${y}-${g*4+w}`;
+          grp.appendChild(cell);
+        }
+        row.appendChild(grp);
+      }
+      grid.appendChild(row);
+    }
+  }
+
+  buildWeekLabels();
+  buildYearLabels();
+  buildGrid();
+</script>
 </body>
 </html>
