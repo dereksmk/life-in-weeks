@@ -205,6 +205,20 @@
     margin-left: 4px;
   }
 
+  /* ── Y-axis rotated label ── */
+  .y-axis-label {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    align-self: flex-start;
+    padding-top: 28px; /* align with first row */
+    flex-shrink: 0;
+    user-select: none;
+  }
+
   /* ── Calendar ── */
   .calendar-scroll {
     width: 100%;
@@ -260,11 +274,11 @@
   .grid-area { flex: 1; min-width: 0; }
 
   .axis-label-weeks {
-    font-size: 8px;
+    font-size: 9px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--ink-light);
-    text-align: center;
+    text-align: left;
     margin-bottom: 4px;
   }
 
@@ -398,17 +412,12 @@
     <button class="setup-btn" onclick="applyDOB()">Generate my calendar</button>
   </div>
 
-  <div class="stats-bar">
-    <div class="stat">Weeks lived <span id="stat-lived">—</span></div>
-    <div class="stat">Weeks remaining <span id="stat-remaining">—</span></div>
-    <div class="stat">Year <span id="stat-year">—</span></div>
-  </div>
+
 
   <div class="calendar-scroll">
     <div class="calendar-outer">
       <div class="year-labels" id="year-labels"></div>
       <div class="grid-area">
-        <div class="axis-label-weeks">← Weeks →</div>
         <div class="week-labels" id="week-labels"></div>
         <div class="grid-rows" id="grid"></div>
       </div>
@@ -416,7 +425,7 @@
   </div>
 
   <footer>
-    <p>"The idea is not to live forever, it is to create something that will."</p>
+    <p>"Each square filled is gone. Each empty one is a gift. Make it count."</p>
     <div class="total">5,200 weeks · 100 years · 52 weeks per year</div>
     <div class="legend">
       <div class="legend-item"><div class="legend-box filled"></div> Lived</div>
@@ -513,8 +522,6 @@
 
     function updateStats(n) {
       document.getElementById('stat-lived').textContent     = n.toLocaleString();
-      document.getElementById('stat-remaining').textContent = Math.max(0, YEARS*WEEKS - totalWeeks).toLocaleString();
-      document.getElementById('stat-year').textContent      = Math.floor(n / WEEKS);
     }
 
     animationTimer = setInterval(() => {
